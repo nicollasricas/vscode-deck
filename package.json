@@ -1,0 +1,70 @@
+{
+  "name": "vscode-streamdeck",
+  "displayName": "Stream Deck for Visual Studio Code",
+  "description": "",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.38.1"
+  },
+  "bugs": {
+    "url": "https://github.com/nicollasricas/vscode-streamdeck/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicollasricas/vscode-streamdeck.git"
+  },
+  "publisher": "nicollasricas",
+  "author": {
+    "name": "Nicollas Ricas"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "category": "Stream Deck",
+        "command": "streamdeck.reconnectToServer",
+        "title": "Reconnect"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Stream Deck",
+        "properties": {
+          "streamdeck.serverHost": {
+            "default": "127.0.0.1",
+            "type": "string"
+          },
+          "streamdeck.serverPort": {
+            "default": 48969,
+            "type": "integer"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "dependencies": {
+    "ws": "^7.1.2",
+    "strongly-typed-events": "^1.6.2"
+  },
+  "devDependencies": {
+    "typescript": "^3.5.3",
+    "vscode": "^1.1.36",
+    "tslint": "^5.19.0",
+    "@types/node": "^12.7.2",
+    "@types/mocha": "^5.2.7",
+    "@types/ws": "^6.0.3"
+  }
+}
