@@ -1,87 +1,89 @@
 import * as vscode from "vscode";
-import { StreamDeck } from "./streamDeck";
+import { ExtensionController } from "./extensionController";
 import { OutputChannelName, Commands, ExtensionScheme, Configurations } from "./constants";
-import { TerminalEvent } from "./events/terminalEvent";
-import { TerminalCommandEvent } from "./events/terminalCommandEvent";
-import { CommandEvent } from "./events/commandEvent";
+import { TerminalCreateMessage } from "./messages/terminalCreateMessage";
+import { TerminalCommandMessage } from "./messages/terminalCommandMessage";
+import { CommandMessage } from "./messages/commandMessage";
+import { ExtensionConfiguration } from "./configuration";
+
+let extensionController: ExtensionController;
 
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = vscode.window.createOutputChannel(OutputChannelName);
   context.subscriptions.push(outputChannel);
 
-  let configuration = vscode.workspace.getConfiguration();
+  const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
+  context.subscriptions.push(statusBar);
 
-  let host = <string>configuration.get(Configurations.ServerHost) || "127.0.0.1";
-  let port = <number>configuration.get(Configurations.ServerPort) || 48969;
+  const configuration = new ExtensionConfiguration();
+  loadOrUpdateConfiguration(configuration);
 
-  const streamdeck = new StreamDeck(context, outputChannel, host, port);
+  extensionController = new ExtensionController(statusBar, outputChannel, configuration);
 
-  registerCommands(context, streamdeck);
+  registerCommands(context, extensionController);
+  registerFeatures(context, extensionController);
 
-  registerEvents(context, streamdeck);
+  extensionController.activate();
 
-  vscode.window.onDidChangeWindowState(state => {
-    if (state.focused) {
-      streamdeck.changeSession(vscode.env.sessionId);
-    }
-  });
-
-  // input pattern
-  // $(Component Name?:app-sidebar)
-  // $(Shell?:\zbin\shell=\dock\zi)
-  // $(displlay:placeholder=defaultvalue)
-
-  // select pattern
-  // $(display:placeholder=item1,item2,item3,item4,item4,item5,item6)
-
-  // const inputBox = vscode.window.createInputBox();
-
-  // inputBox.busy = true;
-  // inputBox.enabled = true;
-  // inputBox.placeholder = "app-sidebar";
-  // inputBox.title = "Component name?";
-  // inputBox.step = 1;
-  // inputBox.totalSteps = 15;
-  // //inputBox.validationMessage = "inválido esse valor man";
-  // inputBox.show();
-
-  // inputBox.onDidHide(m => {
-  //   if (!inputBox.value) {
-  //     vscode.window.showWarningMessage("value not inputted, reject the command execution");
-  //   }
-  // });
-
-  // inputBox.onDidAccept(m => {
-  //   vscode.window.showInformationMessage("accepted answer" + inputBox.value);
-  //   inputBox.hide();
-  // });
-
-  /*
-  vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(this.uri.fsPath), vscode.Uri.file(right), `Diff ${path.basename(this.uri.fsPath)} (Head/Original)`, {});
-*/
+  vscode.window.onDidChangeWindowState(state => windowStateChanged(extensionController, state));
+  vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, configuration));
 }
 
-function registerCommands(context: vscode.ExtensionContext, streamdeck: StreamDeck) {
+export function deactivate() {
+  extensionController.deactivate();
+}
+
+function windowStateChanged(extensionController: ExtensionController, state: vscode.WindowState) {
+  if (state.focused) {
+    extensionController.changeActiveSession(vscode.env.sessionId);
+  } else {
+    extensionController.setSessionAsInactive();
+  }
+}
+
+function configurationChanged(extensionController: ExtensionController, configuration: ExtensionConfiguration) {
+  loadOrUpdateConfiguration(configuration);
+
+  extensionController.configurationChanged(configuration);
+}
+
+function loadOrUpdateConfiguration(configuration: ExtensionConfiguration) {
+  let extensionConfiguration = vscode.workspace.getConfiguration();
+
+  if (extensionConfiguration) {
+    configuration.host = <string>extensionConfiguration.get(Configurations.ServerHost);
+    configuration.port = <number>extensionConfiguration.get(Configurations.ServerPort);
+  }
+}
+
+function registerCommands(context: vscode.ExtensionContext, extensionController: ExtensionController) {
   context.subscriptions.push(
     vscode.commands.registerCommand(`${ExtensionScheme}.${Commands.Reconnect}`, () => {
-      streamdeck.reconnect();
+      extensionController.reconnect();
     })
   );
 }
 
-function registerEvents(context: vscode.ExtensionContext, streamdeck: StreamDeck) {
-  streamdeck.onTerminalRequest.subscribe((_, request) => createTerminal(context, request));
-  streamdeck.onTerminalCommandRequest.subscribe((_, request) => executeTerminalCommand(request));
-  streamdeck.onCommandRequest.subscribe((_, request) => executeCommand(request));
+function registerFeatures(context: vscode.ExtensionContext, extensionController: ExtensionController) {
+  extensionController.onTerminalCreate.subscribe((_, request) => createTerminal(context, request));
+  extensionController.onTerminalCommand.subscribe((_, request) => executeTerminalCommand(request));
+  extensionController.onCommand.subscribe((_, request) => executeCommand(request));
+
+  extensionController.onActiveSessionChanged.subscribe((_, request) => {
+    if (request.sessionId === vscode.env.sessionId) {
+      extensionController.setSessionAsActive();
+    } else {
+    }
+  });
 }
 
-function executeCommand(request: CommandEvent) {
+function executeCommand(request: CommandMessage) {
   if (request.command) {
     vscode.commands.executeCommand(request.command, request.arguments ? [...request.arguments] : []);
   }
 }
 
-function executeTerminalCommand(request: TerminalCommandEvent) {
+function executeTerminalCommand(request: TerminalCommandMessage) {
   let terminal = vscode.window.activeTerminal as vscode.Terminal;
 
   if (terminal && request.command) {
@@ -90,7 +92,7 @@ function executeTerminalCommand(request: TerminalCommandEvent) {
   }
 }
 
-function createTerminal(context: vscode.ExtensionContext, request: TerminalEvent) {
+function createTerminal(context: vscode.ExtensionContext, request: TerminalCreateMessage) {
   let terminal = vscode.window.createTerminal({
     name: request.name,
     cwd: request.workingDirectory,
@@ -102,8 +104,4 @@ function createTerminal(context: vscode.ExtensionContext, request: TerminalEvent
   terminal.show(request.preserveFocus);
 
   context.subscriptions.push(terminal);
-}
-
-export function deactivate() {
-  // streamdeck.disconnect();
 }

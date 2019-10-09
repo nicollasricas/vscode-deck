@@ -2,7 +2,7 @@
   "name": "vscode-streamdeck",
   "displayName": "Stream Deck for Visual Studio Code",
   "description": "",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "engines": {
     "vscode": "^1.38.1"
   },
@@ -57,13 +57,13 @@
   },
   "dependencies": {
     "ws": "^7.1.2",
-    "strongly-typed-events": "^1.6.2"
+    "strongly-typed-events": "^1.6.3"
   },
   "devDependencies": {
-    "typescript": "^3.5.3",
+    "typescript": "^3.6.3",
     "vscode": "^1.1.36",
-    "tslint": "^5.19.0",
-    "@types/node": "^12.7.2",
+    "tslint": "^5.20.0",
+    "@types/node": "^12.7.11",
     "@types/mocha": "^5.2.7",
     "@types/ws": "^6.0.3"
   }

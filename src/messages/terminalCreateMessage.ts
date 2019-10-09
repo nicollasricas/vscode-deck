@@ -1,8 +1,6 @@
-import { Event } from "./event";
-
-export interface TerminalEvent extends Event {
+export class TerminalCreateMessage {
   name?: string;
-  preserveFocus: boolean;
+  preserveFocus!: boolean;
   shellPath?: string;
   shellArgs?: string;
   workingDirectory?: string;
