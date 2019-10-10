@@ -1,4 +1,4 @@
-export class CommandMessage {
+export class ExecuteCommandMessage {
   command!: string;
   arguments!: string;
 }

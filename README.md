@@ -9,12 +9,13 @@ Enables Stream Deck integration within Visual Studio Code.
 
 ## WIP Features
 
-- Folder switch based on the type of project.
+- Advanced terminal creation and command execution with the new released API.
 - Support for Stream Deck Multi Actions.
+- Folder switch based on the type of project.
 
 ## Getting Started
 
-1. Download _Visual Studio Code & Visual Studio_ on Stream Deck Store.
+1. Download _Visual Studio Code plugin_ on Stream Deck Store.
 2. Download _Stream Deck for Visual Studio Code_ on Visual Studio Code marketplace.
 
 ## Settings

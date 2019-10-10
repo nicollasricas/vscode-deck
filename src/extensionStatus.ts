@@ -43,9 +43,12 @@ export class ExtensionStatus {
   }
 
   update() {
-    const connectionStatus = this.connected ? "Connected" : "Connecting";
-    const activeStatus = this.active ? "Active" : "";
+    let connectionStatus = this.connected ? "Connected" : "Connecting";
 
-    this.statusBar.text = `Deck | ${connectionStatus} | ${activeStatus}`;
+    if (this.active) {
+      connectionStatus += " | Active";
+    }
+
+    this.statusBar.text = `Deck | ${connectionStatus}`;
   }
 }

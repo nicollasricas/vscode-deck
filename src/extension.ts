@@ -1,10 +1,12 @@
 import * as vscode from "vscode";
 import { ExtensionController } from "./extensionController";
 import { OutputChannelName, Commands, ExtensionScheme, Configurations } from "./constants";
-import { TerminalCreateMessage } from "./messages/terminalCreateMessage";
-import { TerminalCommandMessage } from "./messages/terminalCommandMessage";
-import { CommandMessage } from "./messages/commandMessage";
+import { CreateTerminalMessage } from "./messages/createTerminalMessage";
+import { ExecuteTerminalCommandMessage } from "./messages/executeTerminalCommandMessage";
+import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
 import { ExtensionConfiguration } from "./configuration";
+import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
+import { create } from "domain";
 
 let extensionController: ExtensionController;
 
@@ -21,12 +23,21 @@ export function activate(context: vscode.ExtensionContext) {
   extensionController = new ExtensionController(statusBar, outputChannel, configuration);
 
   registerCommands(context, extensionController);
-  registerFeatures(context, extensionController);
+
+  subscriptions(context, extensionController);
 
   extensionController.activate();
 
   vscode.window.onDidChangeWindowState(state => windowStateChanged(extensionController, state));
   vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, configuration));
+
+  // console.log("PROCESS PID", process.pid);
+  // console.log("PROCESS PPID", process.ppid);
+
+  // process.on("message", (msg, handle) => console.log("Process message received", msg));
+
+  // process.send!("hello world");
+  // process.emit("message", "hello world 2", "me sending");
 }
 
 export function deactivate() {
@@ -36,8 +47,6 @@ export function deactivate() {
 function windowStateChanged(extensionController: ExtensionController, state: vscode.WindowState) {
   if (state.focused) {
     extensionController.changeActiveSession(vscode.env.sessionId);
-  } else {
-    extensionController.setSessionAsInactive();
   }
 }
 
@@ -64,26 +73,28 @@ function registerCommands(context: vscode.ExtensionContext, extensionController:
   );
 }
 
-function registerFeatures(context: vscode.ExtensionContext, extensionController: ExtensionController) {
-  extensionController.onTerminalCreate.subscribe((_, request) => createTerminal(context, request));
-  extensionController.onTerminalCommand.subscribe((_, request) => executeTerminalCommand(request));
-  extensionController.onCommand.subscribe((_, request) => executeCommand(request));
-
-  extensionController.onActiveSessionChanged.subscribe((_, request) => {
-    if (request.sessionId === vscode.env.sessionId) {
-      extensionController.setSessionAsActive();
-    } else {
-    }
-  });
+function subscriptions(context: vscode.ExtensionContext, extensionController: ExtensionController) {
+  extensionController.onCreateTerminal.subscribe((_, request) => createTerminal(context, request));
+  extensionController.onExecuteTerminalCommand.subscribe((_, request) => executeTerminalCommand(context, request));
+  extensionController.onExecuteCommand.subscribe((_, request) => executeCommand(request));
+  extensionController.onActiveSessionChanged.subscribe((_, request) => onActiveSessionChanged(request));
 }
 
-function executeCommand(request: CommandMessage) {
+function onActiveSessionChanged(request: ActiveSessionChangedMessage) {
+  if (request.sessionId === vscode.env.sessionId) {
+    extensionController.setSessionAsActive();
+  } else {
+    extensionController.setSessionAsInactive();
+  }
+}
+
+function executeCommand(request: ExecuteCommandMessage) {
   if (request.command) {
     vscode.commands.executeCommand(request.command, request.arguments ? [...request.arguments] : []);
   }
 }
 
-function executeTerminalCommand(request: TerminalCommandMessage) {
+function executeTerminalCommand(context: vscode.ExtensionContext, request: ExecuteTerminalCommandMessage) {
   let terminal = vscode.window.activeTerminal as vscode.Terminal;
 
   if (terminal && request.command) {
@@ -92,7 +103,7 @@ function executeTerminalCommand(request: TerminalCommandMessage) {
   }
 }
 
-function createTerminal(context: vscode.ExtensionContext, request: TerminalCreateMessage) {
+function createTerminal(context: vscode.ExtensionContext, request: CreateTerminalMessage) {
   let terminal = vscode.window.createTerminal({
     name: request.name,
     cwd: request.workingDirectory,

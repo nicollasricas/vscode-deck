@@ -1,21 +1,25 @@
 import * as vscode from "vscode";
 import { EventList, IEvent } from "strongly-typed-events";
-import { TerminalCreateMessage } from "./messages/terminalCreateMessage";
-import { Message } from "./messages/message";
+import { CreateTerminalMessage } from "./messages/createTerminalMessage";
 import { ExtensionStatus } from "./extensionStatus";
-import { TerminalCommandMessage } from "./messages/terminalCommandMessage";
-import { CommandMessage } from "./messages/commandMessage";
+import { ExecuteTerminalCommandMessage } from "./messages/executeTerminalCommandMessage";
+import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
 import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
 import { ExtensionHub } from "./extensionHub";
 import { ExtensionConfiguration } from "./configuration";
-import { ChangeSessionMessage } from "./messages/ChangeSessionMessage";
+import { ChangeActiveSessionMessage } from "./messages/changeActiveSessionMessage";
+import { Message } from "./messages/message";
 
 export class ExtensionController {
   private hub!: ExtensionHub;
   private status: ExtensionStatus;
   private eventDispatcher: EventList<ExtensionController, any> = new EventList<ExtensionController, any>();
 
-  constructor(statusBar: vscode.StatusBarItem, private outputChannel: vscode.OutputChannel, configuration: ExtensionConfiguration) {
+  constructor(
+    statusBar: vscode.StatusBarItem,
+    private outputChannel: vscode.OutputChannel,
+    configuration: ExtensionConfiguration
+  ) {
     this.status = new ExtensionStatus(statusBar);
 
     this.createStreamDeckHub(configuration);
@@ -23,6 +27,15 @@ export class ExtensionController {
 
   activate() {
     this.connect();
+  }
+
+  public deactivate() {
+    this.onExecuteCommand.clear();
+    this.onActiveSessionChanged.clear();
+    this.onExecuteTerminalCommand.clear();
+    this.onCreateTerminal.clear();
+
+    this.hub.disconnect();
   }
 
   private createStreamDeckHub(configuration: ExtensionConfiguration) {
@@ -33,14 +46,16 @@ export class ExtensionController {
   }
 
   private connect() {
-    this.status.setAsConnecting();
+    this.outputChannel.appendLine("Connecting to Stream Deck");
 
-    this.outputChannel.appendLine("Connecting to stream deck");
+    this.status.setAsConnecting();
 
     this.hub.connect();
   }
 
   public configurationChanged(configuration: ExtensionConfiguration) {
+    this.outputChannel.appendLine("Configuration changed, restarting...");
+
     if (this.hub) {
       this.hub.disconnect();
     }
@@ -50,47 +65,40 @@ export class ExtensionController {
     this.connect();
   }
 
-  public deactivate() {
-    this.onCommand.clear();
-    this.onActiveSessionChanged.clear();
-    this.onTerminalCommand.clear();
-    this.onTerminalCreate.clear();
-
-    this.hub.disconnect();
-  }
-
   reconnect() {
-    this.outputChannel.appendLine("Reconnecting to stream deck...");
+    this.outputChannel.appendLine("Reconnecting to Stream Deck...");
 
     this.connect();
   }
 
   private onConnected() {
-    this.status.setAsConnected();
+    this.outputChannel.appendLine("Connected to Stream Deck.");
 
-    this.outputChannel.appendLine("Connected to stream deck.");
+    this.status.setAsConnected();
   }
 
-  private onMessageReceived(message: Message) {
+  private onMessageReceived(message: any) {
     try {
-      this.outputChannel.appendLine(`Stream Deck event received ${message}.`);
+      const receivedMessage = <Message>JSON.parse(message);
 
-      this.eventDispatcher.get(message.id).dispatchAsync(this, JSON.parse(message.data));
+      this.outputChannel.appendLine(`Message received, ${receivedMessage.id}.: ${message}`);
+
+      this.eventDispatcher.get(receivedMessage.id).dispatchAsync(this, JSON.parse(receivedMessage.data));
     } catch {}
   }
 
   private onDisconnected() {
-    this.status.setAsConnecting();
+    this.outputChannel.appendLine("Disconnected from Stream Deck.");
 
-    this.outputChannel.appendLine("Disconnected from stream deck.");
+    this.status.setAsConnecting();
 
     this.connect();
   }
 
   changeActiveSession(sessionId: string) {
-    this.hub.send(<ChangeSessionMessage>{
-      sessionId: sessionId
-    });
+    const changeActiveSession = new ChangeActiveSessionMessage();
+    changeActiveSession.sessionId = sessionId;
+    this.hub.send(changeActiveSession);
   }
 
   setSessionAsActive() {
@@ -101,19 +109,27 @@ export class ExtensionController {
     this.status.setInactive();
   }
 
-  get onCommand() {
-    return <IEvent<ExtensionController, CommandMessage>>this.eventDispatcher.get(CommandMessage.name).asEvent();
+  get onExecuteCommand() {
+    return <IEvent<ExtensionController, ExecuteCommandMessage>>(
+      this.eventDispatcher.get(ExecuteCommandMessage.name).asEvent()
+    );
   }
 
-  get onTerminalCreate() {
-    return <IEvent<ExtensionController, TerminalCreateMessage>>this.eventDispatcher.get(TerminalCreateMessage.name).asEvent();
+  get onCreateTerminal() {
+    return <IEvent<ExtensionController, CreateTerminalMessage>>(
+      this.eventDispatcher.get(CreateTerminalMessage.name).asEvent()
+    );
   }
 
-  get onTerminalCommand() {
-    return <IEvent<ExtensionController, TerminalCommandMessage>>this.eventDispatcher.get(TerminalCommandMessage.name).asEvent();
+  get onExecuteTerminalCommand() {
+    return <IEvent<ExtensionController, ExecuteTerminalCommandMessage>>(
+      this.eventDispatcher.get(ExecuteTerminalCommandMessage.name).asEvent()
+    );
   }
 
   get onActiveSessionChanged() {
-    return <IEvent<ExtensionController, ActiveSessionChangedMessage>>this.eventDispatcher.get(ActiveSessionChangedMessage.name).asEvent();
+    return <IEvent<ExtensionController, ActiveSessionChangedMessage>>(
+      this.eventDispatcher.get(ActiveSessionChangedMessage.name).asEvent()
+    );
   }
 }

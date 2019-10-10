@@ -1,4 +1,4 @@
-export class TerminalCreateMessage {
+export class CreateTerminalMessage {
   name?: string;
   preserveFocus!: boolean;
   shellPath?: string;

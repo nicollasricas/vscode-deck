@@ -1,7 +1,5 @@
 import { SignalDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import WebSocket = require("ws");
-import { Message } from "./messages/message";
-import { MessageChannel } from "worker_threads";
 
 export class ExtensionHub {
   private _onConnected = new SignalDispatcher();
@@ -29,10 +27,12 @@ export class ExtensionHub {
 
   send(message: any) {
     if (this.socket) {
-      this.socket.send(<Message>{
-        id: message.name,
-        data: JSON.stringify(message)
-      });
+      this.socket.send(
+        JSON.stringify({
+          id: message.constructor.name,
+          data: JSON.stringify(message)
+        })
+      );
     }
   }
 
