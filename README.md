@@ -15,7 +15,7 @@ Enables Stream Deck integration within Visual Studio Code.
 
 ## Getting Started
 
-1. Download _Visual Studio Code plugin_ on Stream Deck Store.
+1. Download _Visual Studio Code plugin_ on Stream Deck Store or [here](https://github.com/nicollasricas/vscode-streamdeck/releases).
 2. Download _Stream Deck for Visual Studio Code_ on Visual Studio Code marketplace.
 
 ## Settings
