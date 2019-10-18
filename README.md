@@ -22,7 +22,7 @@ Enables Stream Deck integration within Visual Studio Code.
 
 You can change the IP and port to the message server in:
 
-_%appdata%\Elgato\StreamDeck\Plugins\com.nicollasr.vsstreamdeck.sdPlugin\appsettings.json_
+_%appdata%\Elgato\StreamDeck\Plugins\com.nicollasr.streamdeckvsc.sdPlugin\appsettings.json_
 
 **Don't forget to change it in Visual Studio Code settings or you won't be able to connect and use the available features.**
 
