@@ -6,7 +6,6 @@ import { ExecuteTerminalCommandMessage } from "./messages/executeTerminalCommand
 import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
 import { ExtensionConfiguration } from "./configuration";
 import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
-import { create } from "domain";
 
 let extensionController: ExtensionController;
 
