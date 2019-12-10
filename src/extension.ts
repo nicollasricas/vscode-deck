@@ -6,6 +6,7 @@ import { ExecuteTerminalCommandMessage } from "./messages/executeTerminalCommand
 import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
 import { ExtensionConfiguration } from "./configuration";
 import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
+import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
 
 let extensionController: ExtensionController;
 
@@ -29,6 +30,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.window.onDidChangeWindowState(state => windowStateChanged(extensionController, state));
   vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, configuration));
+
+  //editor.action.insertSnippet
+
+  //vscode.window.createTextEditorDecorationType()
 
   // console.log("PROCESS PID", process.pid);
   // console.log("PROCESS PPID", process.ppid);
@@ -77,6 +82,7 @@ function subscriptions(context: vscode.ExtensionContext, extensionController: Ex
   extensionController.onExecuteTerminalCommand.subscribe((_, request) => executeTerminalCommand(context, request));
   extensionController.onExecuteCommand.subscribe((_, request) => executeCommand(request));
   extensionController.onActiveSessionChanged.subscribe((_, request) => onActiveSessionChanged(request));
+  extensionController.onChangeLanguageCommand.subscribe((_, request) => changeLanguage(request));
 }
 
 function onActiveSessionChanged(request: ActiveSessionChangedMessage) {
@@ -87,9 +93,25 @@ function onActiveSessionChanged(request: ActiveSessionChangedMessage) {
   }
 }
 
+function changeLanguage(request: ChangeLanguageMessage) {
+  if (vscode.window.activeTextEditor) {
+    vscode.languages.setTextDocumentLanguage(vscode.window.activeTextEditor.document, request.languageId);
+  }
+}
+
 function executeCommand(request: ExecuteCommandMessage) {
   if (request.command) {
-    vscode.commands.executeCommand(request.command, request.arguments ? [...request.arguments] : []);
+    let commandArguments;
+
+    try {
+      commandArguments = JSON.parse(request.arguments);
+    } catch {}
+
+    if (commandArguments) {
+      vscode.commands.executeCommand(request.command, commandArguments);
+    } else {
+      vscode.commands.executeCommand(request.command);
+    }
   }
 }
 

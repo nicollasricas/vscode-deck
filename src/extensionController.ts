@@ -9,6 +9,7 @@ import { ExtensionHub } from "./extensionHub";
 import { ExtensionConfiguration } from "./configuration";
 import { ChangeActiveSessionMessage } from "./messages/changeActiveSessionMessage";
 import { Message } from "./messages/message";
+import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
 
 export class ExtensionController {
   private hub!: ExtensionHub;
@@ -107,6 +108,12 @@ export class ExtensionController {
 
   setSessionAsInactive() {
     this.status.setInactive();
+  }
+
+  get onChangeLanguageCommand() {
+    return <IEvent<ExtensionController, ChangeLanguageMessage>>(
+      this.eventDispatcher.get(ChangeLanguageMessage.name).asEvent()
+    );
   }
 
   get onExecuteCommand() {
