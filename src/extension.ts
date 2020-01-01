@@ -7,6 +7,7 @@ import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
 import { ExtensionConfiguration } from "./configuration";
 import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
+import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
 
 let extensionController: ExtensionController;
 
@@ -83,6 +84,7 @@ function subscriptions(context: vscode.ExtensionContext, extensionController: Ex
   extensionController.onExecuteCommand.subscribe((_, request) => executeCommand(request));
   extensionController.onActiveSessionChanged.subscribe((_, request) => onActiveSessionChanged(request));
   extensionController.onChangeLanguageCommand.subscribe((_, request) => changeLanguage(request));
+  extensionController.onInsertSnippetCommand.subscribe((_, request) => insertSnippet(request));
 }
 
 function onActiveSessionChanged(request: ActiveSessionChangedMessage) {
@@ -96,6 +98,14 @@ function onActiveSessionChanged(request: ActiveSessionChangedMessage) {
 function changeLanguage(request: ChangeLanguageMessage) {
   if (vscode.window.activeTextEditor) {
     vscode.languages.setTextDocumentLanguage(vscode.window.activeTextEditor.document, request.languageId);
+  }
+}
+
+function insertSnippet(request: InsertSnippetMessage) {
+  if (request.name) {
+    vscode.commands.executeCommand("editor.action.insertSnippet", {
+      name: request.name
+    });
   }
 }
 

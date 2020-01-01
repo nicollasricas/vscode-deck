@@ -10,6 +10,7 @@ import { ExtensionConfiguration } from "./configuration";
 import { ChangeActiveSessionMessage } from "./messages/changeActiveSessionMessage";
 import { Message } from "./messages/message";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
+import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
 
 export class ExtensionController {
   private hub!: ExtensionHub;
@@ -113,6 +114,12 @@ export class ExtensionController {
   get onChangeLanguageCommand() {
     return <IEvent<ExtensionController, ChangeLanguageMessage>>(
       this.eventDispatcher.get(ChangeLanguageMessage.name).asEvent()
+    );
+  }
+
+  get onInsertSnippetCommand() {
+    return <IEvent<ExtensionController, InsertSnippetMessage>>(
+      this.eventDispatcher.get(InsertSnippetMessage.name).asEvent()
     );
   }
 
