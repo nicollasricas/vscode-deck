@@ -4,7 +4,8 @@ export const ExtensionScheme = "streamdeck";
 export const OutputChannelName = "Stream Deck";
 
 export enum Commands {
-  Reconnect = "reconnectToServer"
+  Reconnect = "reconnectToServer",
+  ActivateSession = "activateSession"
 }
 
 export enum Configurations {

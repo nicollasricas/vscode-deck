@@ -2,7 +2,7 @@
   "name": "vscode-streamdeck",
   "displayName": "Stream Deck for Visual Studio Code",
   "description": "Enables Stream Deck integration with Visual Studio Code.",
-  "version": "3.0.2",
+  "version": "3.1.2",
   "engines": {
     "vscode": "^1.38.1"
   },
@@ -37,6 +37,11 @@
         "category": "Stream Deck",
         "command": "streamdeck.reconnectToServer",
         "title": "Reconnect"
+      },
+      {
+        "category": "Stream Deck",
+        "command": "streamdeck.activateSession",
+        "title": "Activate"
       }
     ],
     "configuration": [

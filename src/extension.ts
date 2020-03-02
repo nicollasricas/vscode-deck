@@ -16,6 +16,8 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(outputChannel);
 
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
+  statusBar.command = `${ExtensionScheme}.${Commands.ActivateSession}`;
+  statusBar.tooltip = "Click to activate this session.";
   context.subscriptions.push(statusBar);
 
   const configuration = new ExtensionConfiguration();
@@ -31,18 +33,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.window.onDidChangeWindowState(state => windowStateChanged(extensionController, state));
   vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, configuration));
-
-  //editor.action.insertSnippet
-
-  //vscode.window.createTextEditorDecorationType()
-
-  // console.log("PROCESS PID", process.pid);
-  // console.log("PROCESS PPID", process.ppid);
-
-  // process.on("message", (msg, handle) => console.log("Process message received", msg));
-
-  // process.send!("hello world");
-  // process.emit("message", "hello world 2", "me sending");
 }
 
 export function deactivate() {
@@ -74,6 +64,12 @@ function registerCommands(context: vscode.ExtensionContext, extensionController:
   context.subscriptions.push(
     vscode.commands.registerCommand(`${ExtensionScheme}.${Commands.Reconnect}`, () => {
       extensionController.reconnect();
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(`${ExtensionScheme}.${Commands.ActivateSession}`, () => {
+      extensionController.changeActiveSession(vscode.env.sessionId);
     })
   );
 }
