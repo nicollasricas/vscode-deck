@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
   const configuration = new ExtensionConfiguration();
   loadOrUpdateConfiguration(configuration);
 
-  extensionController = new ExtensionController(statusBar, outputChannel, configuration);
+  extensionController = new ExtensionController(statusBar, outputChannel, vscode.env.sessionId, configuration);
 
   registerCommands(context, extensionController);
 

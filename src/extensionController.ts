@@ -20,6 +20,7 @@ export class ExtensionController {
   constructor(
     statusBar: vscode.StatusBarItem,
     private outputChannel: vscode.OutputChannel,
+    private sessionId: string,
     configuration: ExtensionConfiguration
   ) {
     this.status = new ExtensionStatus(statusBar);
@@ -41,7 +42,7 @@ export class ExtensionController {
   }
 
   private createStreamDeckHub(configuration: ExtensionConfiguration) {
-    this.hub = new ExtensionHub(configuration.host, configuration.port);
+    this.hub = new ExtensionHub(configuration.host, configuration.port, this.sessionId);
     this.hub.onConnected.subscribe(() => this.onConnected());
     this.hub.onDisconnected.subscribe(() => this.onDisconnected());
     this.hub.onMessageReceived.subscribe(message => this.onMessageReceived(message));

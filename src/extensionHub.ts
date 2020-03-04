@@ -7,10 +7,12 @@ export class ExtensionHub {
   private _onMessageReceived = new SimpleEventDispatcher<any>();
   private socket!: WebSocket;
 
-  constructor(private host: string, private port: number) {}
+  constructor(private host: string, private port: number, private sessionId: string) {}
 
   connect() {
-    this.socket = new WebSocket(`ws://${this.host}:${this.port}`);
+    this.socket = new WebSocket(`ws://${this.host}:${this.port}`, {
+      headers: { "X-VSSessionID": this.sessionId }
+    });
     this.socket.on("open", () => this._onConnected.dispatch());
     this.socket.on("message", message => this._onMessageReceived.dispatch(message));
     this.socket.on("close", () => this._onDisconnected.dispatch());
