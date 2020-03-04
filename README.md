@@ -9,7 +9,7 @@
 ## Getting Started
 
 1. Download _Visual Studio Code_ plugin on Stream Deck Store or [here](https://github.com/nicollasricas/vscode-streamdeck/releases/latest).
-2. Download _Stream Deck for Visual Studio Code_ on [Visual Studio Code marketplace](https://marketplace.visualstudio.com/items?itemName=nicollasr.vscode-streamdeck).
+2. Download _Stream Deck for Visual Studio Code_ on [Visual Studio Code marketplace](https://marketplace.visualstudio.com/items?itemName=nicollasr.vscode-streamdeck) or [here](https://github.com/nicollasricas/vscode-streamdeck/releases/latest).
 
 After installing the plugin and the extension you should see this in VSCode status bar:
 
