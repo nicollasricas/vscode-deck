@@ -21,6 +21,8 @@ export class ExtensionStatus {
   setAsConnecting() {
     this.connected = false;
 
+    this.setInactive();
+
     this.update();
   }
 
