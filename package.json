@@ -2,9 +2,9 @@
   "name": "vscode-streamdeck",
   "displayName": "Stream Deck for Visual Studio Code",
   "description": "Enables Stream Deck integration with Visual Studio Code.",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "engines": {
-    "vscode": "^1.38.1"
+    "vscode": "^1.38.0"
   },
   "bugs": {
     "url": "https://github.com/nicollasricas/vscode-streamdeck/issues"
@@ -24,7 +24,6 @@
     "*"
   ],
   "keywords": [
-    "stream deck",
     "streamdeck",
     "deck",
     "stream",
@@ -64,20 +63,27 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
+    "lint": "eslint src --ext ts",
     "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    "pretest": "npm run compile && npm run lint",
+    "test": "node ./out/test/runTest.js"
   },
   "dependencies": {
-    "ws": "^7.1.2",
-    "strongly-typed-events": "^1.6.3"
+    "strongly-typed-events": "^1.6.11",
+    "ws": "^7.2.3"
   },
   "devDependencies": {
-    "typescript": "^3.6.3",
-    "vscode": "^1.1.36",
-    "tslint": "^5.20.0",
-    "@types/node": "^12.7.11",
-    "@types/mocha": "^5.2.7",
-    "@types/ws": "^6.0.3"
+    "@types/vscode": "^1.38.0",
+    "@types/glob": "^7.1.1",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.11.0",
+    "@types/ws": "7.2.3",
+    "eslint": "^6.8.0",
+    "@typescript-eslint/parser": "^2.26.0",
+    "@typescript-eslint/eslint-plugin": "^2.26.0",
+    "glob": "^7.1.6",
+    "mocha": "^7.1.1",
+    "typescript": "^3.8.3",
+    "vscode-test": "^1.3.0"
   }
 }
