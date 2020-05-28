@@ -11,18 +11,15 @@ import { ChangeActiveSessionMessage } from "./messages/changeActiveSessionMessag
 import { Message } from "./messages/message";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
 import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
+import Logger from "./logger";
+import { OpenFolderMessage } from "./messages/OpenFolderMessage";
 
 export class ExtensionController {
   private hub!: ExtensionHub;
   private status: ExtensionStatus;
   private eventDispatcher: EventList<ExtensionController, any> = new EventList<ExtensionController, any>();
 
-  constructor(
-    statusBar: vscode.StatusBarItem,
-    private outputChannel: vscode.OutputChannel,
-    private sessionId: string,
-    configuration: ExtensionConfiguration
-  ) {
+  constructor(statusBar: vscode.StatusBarItem, private sessionId: string, configuration: ExtensionConfiguration) {
     this.status = new ExtensionStatus(statusBar);
 
     this.createStreamDeckHub(configuration);
@@ -45,11 +42,11 @@ export class ExtensionController {
     this.hub = new ExtensionHub(configuration.host, configuration.port, this.sessionId);
     this.hub.onConnected.subscribe(() => this.onConnected());
     this.hub.onDisconnected.subscribe(() => this.onDisconnected());
-    this.hub.onMessageReceived.subscribe(message => this.onMessageReceived(message));
+    this.hub.onMessageReceived.subscribe((message) => this.onMessageReceived(message));
   }
 
   private connect() {
-    this.outputChannel.appendLine("Connecting to Stream Deck");
+    Logger.log("Connecting to Stream Deck");
 
     this.status.setAsConnecting();
 
@@ -57,7 +54,7 @@ export class ExtensionController {
   }
 
   public configurationChanged(configuration: ExtensionConfiguration) {
-    this.outputChannel.appendLine("Configuration changed, restarting...");
+    Logger.log("Configuration changed, restarting...");
 
     if (this.hub) {
       this.hub.disconnect();
@@ -69,13 +66,13 @@ export class ExtensionController {
   }
 
   reconnect() {
-    this.outputChannel.appendLine("Reconnecting to Stream Deck...");
+    Logger.log("Reconnecting to Stream Deck...");
 
     this.connect();
   }
 
   private onConnected() {
-    this.outputChannel.appendLine("Connected to Stream Deck.");
+    Logger.log("Connected to Stream Deck.");
 
     this.status.setAsConnected();
   }
@@ -84,14 +81,16 @@ export class ExtensionController {
     try {
       const receivedMessage = <Message>JSON.parse(message);
 
-      this.outputChannel.appendLine(`Message received, ${receivedMessage.id}.: ${message}`);
+      Logger.log(`Message received, ${receivedMessage.id}.: ${message}`);
 
       this.eventDispatcher.get(receivedMessage.id).dispatchAsync(this, JSON.parse(receivedMessage.data));
-    } catch {}
+    } catch (error) {
+      Logger.error(error);
+    }
   }
 
   private onDisconnected() {
-    this.outputChannel.appendLine("Disconnected from Stream Deck.");
+    Logger.log("Disconnected from Stream Deck.");
 
     this.status.setAsConnecting();
 
@@ -122,6 +121,10 @@ export class ExtensionController {
     return <IEvent<ExtensionController, InsertSnippetMessage>>(
       this.eventDispatcher.get(InsertSnippetMessage.name).asEvent()
     );
+  }
+
+  get onOpenFolderCommand() {
+    return <IEvent<ExtensionController, OpenFolderMessage>>this.eventDispatcher.get(OpenFolderMessage.name).asEvent();
   }
 
   get onExecuteCommand() {

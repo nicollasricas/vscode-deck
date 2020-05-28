@@ -1,5 +1,6 @@
 import { SignalDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import WebSocket = require("ws");
+import Logger from "./logger";
 
 export class ExtensionHub {
   private _onConnected = new SignalDispatcher();
@@ -11,12 +12,12 @@ export class ExtensionHub {
 
   connect() {
     this.socket = new WebSocket(`ws://${this.host}:${this.port}`, {
-      headers: { "X-VSSessionID": this.sessionId }
+      headers: { "X-VSSessionID": this.sessionId },
     });
     this.socket.on("open", () => this._onConnected.dispatch());
-    this.socket.on("message", message => this._onMessageReceived.dispatch(message));
+    this.socket.on("message", (message) => this._onMessageReceived.dispatch(message));
     this.socket.on("close", () => this._onDisconnected.dispatch());
-    this.socket.on("error", () => {});
+    this.socket.on("error", () => Logger.error);
   }
 
   disconnect() {
@@ -32,7 +33,7 @@ export class ExtensionHub {
       this.socket.send(
         JSON.stringify({
           id: message.constructor.name,
-          data: JSON.stringify(message)
+          data: JSON.stringify(message),
         })
       );
     }

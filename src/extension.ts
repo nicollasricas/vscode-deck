@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
+import Logger from "./logger";
 import { ExtensionController } from "./extensionController";
-import { OutputChannelName, Commands, ExtensionScheme, Configurations } from "./constants";
+import { Commands, ExtensionScheme, Configurations } from "./constants";
 import { CreateTerminalMessage } from "./messages/createTerminalMessage";
 import { ExecuteTerminalCommandMessage } from "./messages/executeTerminalCommandMessage";
 import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
@@ -8,12 +9,12 @@ import { ExtensionConfiguration } from "./configuration";
 import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
 import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
+import { OpenFolderMessage } from "./messages/OpenFolderMessage";
 
 let extensionController: ExtensionController;
 
 export function activate(context: vscode.ExtensionContext) {
-  const outputChannel = vscode.window.createOutputChannel(OutputChannelName);
-  context.subscriptions.push(outputChannel);
+  Logger.initialize(context);
 
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
   statusBar.command = `${ExtensionScheme}.${Commands.ActivateSession}`;
@@ -23,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
   const configuration = new ExtensionConfiguration();
   loadOrUpdateConfiguration(configuration);
 
-  extensionController = new ExtensionController(statusBar, outputChannel, vscode.env.sessionId, configuration);
+  extensionController = new ExtensionController(statusBar, vscode.env.sessionId, configuration);
 
   registerCommands(context, extensionController);
 
@@ -31,7 +32,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   extensionController.activate();
 
-  vscode.window.onDidChangeWindowState(state => windowStateChanged(extensionController, state));
+  Logger.log(`Registering session ${vscode.env.sessionId}`);
+
+  vscode.window.onDidChangeWindowState((state) => windowStateChanged(extensionController, state));
   vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, configuration));
 }
 
@@ -69,18 +72,25 @@ function registerCommands(context: vscode.ExtensionContext, extensionController:
 
   context.subscriptions.push(
     vscode.commands.registerCommand(`${ExtensionScheme}.${Commands.ActivateSession}`, () => {
-      extensionController.changeActiveSession(vscode.env.sessionId);
+      Logger.log(`Activation requested to ${vscode.env.sessionId}`);
+
+      try {
+        extensionController.changeActiveSession(vscode.env.sessionId);
+      } catch (error) {
+        Logger.error(error);
+      }
     })
   );
 }
 
 function subscriptions(context: vscode.ExtensionContext, extensionController: ExtensionController) {
   extensionController.onCreateTerminal.subscribe((_, request) => createTerminal(context, request));
-  extensionController.onExecuteTerminalCommand.subscribe((_, request) => executeTerminalCommand(context, request));
+  extensionController.onExecuteTerminalCommand.subscribe((_, request) => executeTerminalCommand(request));
   extensionController.onExecuteCommand.subscribe((_, request) => executeCommand(request));
   extensionController.onActiveSessionChanged.subscribe((_, request) => onActiveSessionChanged(request));
   extensionController.onChangeLanguageCommand.subscribe((_, request) => changeLanguage(request));
   extensionController.onInsertSnippetCommand.subscribe((_, request) => insertSnippet(request));
+  extensionController.onOpenFolderCommand.subscribe((_, request) => openFolder(request));
 }
 
 function onActiveSessionChanged(request: ActiveSessionChangedMessage) {
@@ -100,8 +110,14 @@ function changeLanguage(request: ChangeLanguageMessage) {
 function insertSnippet(request: InsertSnippetMessage) {
   if (request.name) {
     vscode.commands.executeCommand("editor.action.insertSnippet", {
-      name: request.name
+      name: request.name,
     });
+  }
+}
+
+function openFolder(request: OpenFolderMessage) {
+  if (request.path) {
+    vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(request.path), request.newWindow);
   }
 }
 
@@ -111,7 +127,9 @@ function executeCommand(request: ExecuteCommandMessage) {
 
     try {
       commandArguments = JSON.parse(request.arguments);
-    } catch {}
+    } catch (error) {
+      Logger.error(error);
+    }
 
     if (commandArguments) {
       vscode.commands.executeCommand(request.command, commandArguments);
@@ -121,7 +139,7 @@ function executeCommand(request: ExecuteCommandMessage) {
   }
 }
 
-function executeTerminalCommand(context: vscode.ExtensionContext, request: ExecuteTerminalCommandMessage) {
+function executeTerminalCommand(request: ExecuteTerminalCommandMessage) {
   let terminal = vscode.window.activeTerminal as vscode.Terminal;
 
   if (terminal && request.command) {
@@ -136,7 +154,7 @@ function createTerminal(context: vscode.ExtensionContext, request: CreateTermina
     cwd: request.workingDirectory,
     env: request.environment,
     shellArgs: request.shellArgs,
-    shellPath: request.shellPath
+    shellPath: request.shellPath,
   });
 
   terminal.show(request.preserveFocus);

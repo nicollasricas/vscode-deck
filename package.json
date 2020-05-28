@@ -2,7 +2,7 @@
   "name": "vscode-streamdeck",
   "displayName": "Stream Deck for Visual Studio Code",
   "description": "Enables Stream Deck integration with Visual Studio Code.",
-  "version": "3.1.5",
+  "version": "4.1.5",
   "engines": {
     "vscode": "^1.38.0"
   },
@@ -70,14 +70,14 @@
   },
   "dependencies": {
     "strongly-typed-events": "^1.6.11",
-    "ws": "^7.2.3"
+    "ws": "^7.2.5"
   },
   "devDependencies": {
     "@types/vscode": "^1.38.0",
     "@types/glob": "^7.1.1",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^13.11.0",
-    "@types/ws": "7.2.3",
+    "@types/node": "^14.0.5",
+    "@types/ws": "7.2.4",
     "eslint": "^6.8.0",
     "@typescript-eslint/parser": "^2.26.0",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
