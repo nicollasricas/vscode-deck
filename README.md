@@ -19,6 +19,12 @@ After installing the plugin and the extension you should see this in VSCode stat
 
 **Only the active session will receive the commands.**
 
+**If you are connected remotely through SSH, you should add a forward into your SSH config.**
+
+> RemoteForward 48969 127.0.0.1:48969
+
+Thanks to **[rettgerst](https://github.com/rettgerst)** for pointing this out [here](https://github.com/nicollasricas/vscode-streamdeck/issues/4#issuecomment-674471109).
+
 ## Getting Commands ID
 
 In Visual Studio Code open _File->Preferences->Keyboard Shortcuts_, find the command you want, right-click it and _Copy Command Id_.
@@ -39,6 +45,6 @@ _%appdata%\Elgato\StreamDeck\Plugins\com.nicollasr.streamdeckvsc.sdPlugin\settin
 
 _~/Library/Application Support/com.elgato.StreamDeck/Plugins/com.nicollasr.streamdeckvsc.mac.sdPlugin/settings.ini_
 
-**Don't forget to change it in Visual Studio Code settings or you won't be able to connect and use the available features.**
+**If you changed the server port, don't forget to change it in Visual Studio Code settings or you won't be able to connect and use the available features.**
 
 _I recommend using 127.0.0.1 as your IP address instead of localhost_.
