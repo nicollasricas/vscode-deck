@@ -48,3 +48,15 @@ _~/Library/Application Support/com.elgato.StreamDeck/Plugins/com.nicollasr.strea
 **If you changed the server port, don't forget to change it in Visual Studio Code settings or you won't be able to connect and use the available features.**
 
 _I recommend using 127.0.0.1 as your IP address instead of localhost_.
+
+#### Windows WSL2
+
+_~/.vscode-server/data/Machine/settings.json_
+
+Use the IP address of the Win10 host, as identified by `ipconfig /all` from a CMD Prompt - e.g.:
+```
+{
+    "streamdeck.serverHost": "192.168.0.25"
+}
+```
+
