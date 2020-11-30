@@ -51,12 +51,18 @@ _I recommend using 127.0.0.1 as your IP address instead of localhost_.
 
 #### Windows WSL2
 
-_~/.vscode-server/data/Machine/settings.json_
+1) It is important that _%appdata%\Elgato\StreamDeck\Plugins\com.nicollasr.streamdeckvsc.sdPlugin\settings.ini_ is listening on `0.0.0.0`:
+```
+[general]
+host=0.0.0.0
+port=48969
+```
 
-Use the IP address of the Win10 host, as identified by `ipconfig /all` from a CMD Prompt - e.g.:
+2) Next, configure _~/.vscode-server/data/Machine/settings.json_ to  the IP address of the Win10 host, as identified by `ipconfig /all` from a CMD Prompt - e.g.:
 ```
 {
     "streamdeck.serverHost": "192.168.0.25"
 }
 ```
+
 
