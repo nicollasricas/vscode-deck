@@ -90,11 +90,13 @@ export class ExtensionController {
   }
 
   private onDisconnected() {
-    Logger.log("Disconnected from Stream Deck.");
+    Logger.log("Disconnected from Stream Deck. Reconnecting in 5 seconds.");
 
     this.status.setAsConnecting();
 
-    this.connect();
+    setTimeout(() => {
+      this.connect();
+    }, 5000);
   }
 
   changeActiveSession(sessionId: string) {
