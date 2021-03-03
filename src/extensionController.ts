@@ -10,9 +10,9 @@ import { ExtensionConfiguration } from "./configuration";
 import { ChangeActiveSessionMessage } from "./messages/changeActiveSessionMessage";
 import { Message } from "./messages/message";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
-import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
+import { InsertSnippetMessage } from "./messages/insertSnippetMessage";
 import Logger from "./logger";
-import { OpenFolderMessage } from "./messages/OpenFolderMessage";
+import { OpenFolderMessage } from "./messages/openFolderMessage";
 
 export class ExtensionController {
   private hub!: ExtensionHub;

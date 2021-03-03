@@ -8,8 +8,8 @@ import { ExecuteCommandMessage } from "./messages/executeCommandMessage";
 import { ExtensionConfiguration } from "./configuration";
 import { ActiveSessionChangedMessage } from "./messages/activeSessionChangedMessage";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
-import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
-import { OpenFolderMessage } from "./messages/OpenFolderMessage";
+import { InsertSnippetMessage } from "./messages/insertSnippetMessage";
+import { OpenFolderMessage } from "./messages/openFolderMessage";
 
 let extensionController: ExtensionController;
 
