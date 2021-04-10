@@ -10,9 +10,9 @@ import { ExtensionConfiguration } from "./configuration";
 import { ChangeActiveSessionMessage } from "./messages/changeActiveSessionMessage";
 import { Message } from "./messages/message";
 import { ChangeLanguageMessage } from "./messages/changeLanguagMessage";
-import { InsertSnippetMessage } from "./messages/InsertSnippetMessage";
+import { InsertSnippetMessage } from "./messages/insertSnippetMessage";
 import Logger from "./logger";
-import { OpenFolderMessage } from "./messages/OpenFolderMessage";
+import { OpenFolderMessage } from "./messages/openFolderMessage";
 
 export class ExtensionController {
   private hub!: ExtensionHub;
@@ -90,11 +90,13 @@ export class ExtensionController {
   }
 
   private onDisconnected() {
-    Logger.log("Disconnected from Stream Deck.");
+    Logger.log("Disconnected from Stream Deck. Reconnecting in 5 seconds.");
 
     this.status.setAsConnecting();
 
-    this.connect();
+    setTimeout(() => {
+      this.connect();
+    }, 5000);
   }
 
   changeActiveSession(sessionId: string) {

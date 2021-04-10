@@ -59,6 +59,9 @@
       }
     ]
   },
+  "extensionKind": [
+    "ui"
+  ],
   "icon": "code.png",
   "scripts": {
     "vscode:prepublish": "npm run compile",
