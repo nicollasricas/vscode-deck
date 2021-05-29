@@ -73,7 +73,7 @@
   },
   "dependencies": {
     "strongly-typed-events": "^1.6.11",
-    "ws": "^7.2.5"
+    "ws": "^7.4.6"
   },
   "devDependencies": {
     "@types/vscode": "^1.38.0",
