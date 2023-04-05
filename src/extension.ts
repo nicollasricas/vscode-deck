@@ -21,10 +21,9 @@ export function activate(context: vscode.ExtensionContext) {
   statusBar.tooltip = "Click to activate this session.";
   context.subscriptions.push(statusBar);
 
-  const configuration = new ExtensionConfiguration();
-  loadOrUpdateConfiguration(configuration);
+  const initialConfiguration = loadExtensionConfiguration();
 
-  extensionController = new ExtensionController(statusBar, vscode.env.sessionId, configuration);
+  extensionController = new ExtensionController(statusBar, vscode.env.sessionId, initialConfiguration);
 
   registerCommands(context, extensionController);
 
@@ -35,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
   Logger.log(`Registering session ${vscode.env.sessionId}`);
 
   vscode.window.onDidChangeWindowState((state) => windowStateChanged(extensionController, state));
-  vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, configuration));
+  vscode.workspace.onDidChangeConfiguration(() => configurationChanged(extensionController, initialConfiguration));
 }
 
 export function deactivate() {
@@ -48,19 +47,17 @@ function windowStateChanged(extensionController: ExtensionController, state: vsc
   }
 }
 
-function configurationChanged(extensionController: ExtensionController, configuration: ExtensionConfiguration) {
-  loadOrUpdateConfiguration(configuration);
+function configurationChanged(extensionController: ExtensionController, initialConfiguration: ExtensionConfiguration) {
+  const currentConfiguration = loadExtensionConfiguration();
 
-  extensionController.configurationChanged(configuration);
+  if (!currentConfiguration.equals(initialConfiguration)) {
+    extensionController.configurationChanged(currentConfiguration);
+  }
 }
 
-function loadOrUpdateConfiguration(configuration: ExtensionConfiguration) {
-  let extensionConfiguration = vscode.workspace.getConfiguration();
-
-  if (extensionConfiguration) {
-    configuration.host = <string>extensionConfiguration.get(Configurations.ServerHost);
-    configuration.port = <number>extensionConfiguration.get(Configurations.ServerPort);
-  }
+function loadExtensionConfiguration(): ExtensionConfiguration {
+  const workspaceConfiguration = vscode.workspace.getConfiguration();
+  return ExtensionConfiguration.create(workspaceConfiguration);
 }
 
 function registerCommands(context: vscode.ExtensionContext, extensionController: ExtensionController) {
