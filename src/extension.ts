@@ -123,19 +123,17 @@ function openFolder(request: OpenFolderMessage) {
 
 function executeCommand(request: ExecuteCommandMessage) {
   if (request.command) {
-    let commandArguments;
+    let commandArguments: unknown;
 
-    try {
-      commandArguments = JSON.parse(request.arguments);
-    } catch (error) {
-      Logger.error(error);
+    if (request.arguments.trim() !== "") {
+      try {
+        commandArguments = JSON.parse(request.arguments);
+      } catch (error) {
+        Logger.error(error);
+      }
     }
 
-    if (commandArguments) {
-      vscode.commands.executeCommand(request.command, commandArguments);
-    } else {
-      vscode.commands.executeCommand(request.command);
-    }
+    vscode.commands.executeCommand(request.command, commandArguments);
   }
 }
 
